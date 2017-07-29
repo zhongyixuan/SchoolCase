@@ -1,0 +1,375 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>修繕管理系統</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/css/style.css" rel="stylesheet" type="text/css">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="assets/img/apple-touch-icon-144-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/img/apple-touch-icon-114-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/img/apple-touch-icon-72-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" href="assets/img/apple-touch-icon-57-precomposed.png">
+  <link rel="shortcut icon" href="assets/img/favicon.png">
+  <link href="assets/tableStyle.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="assets/js/jquery.min.js"></script>
+  <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="assets/js/scripts.js"></script>
+
+  <!--引用之css-->
+  <link href="assets/css/validation-theme.css" rel="stylesheet" />
+  <script src="assets/js/jquery.validate.min.js"></script>
+  <script src="assets/js/messages_zh_TW.min.js"></script>
+  <!--預設提示字改為中文-->
+  <script src="assets/js/form-validate.js"></script>
+  <!--驗證型態-->
+  <style type="text/css">
+    .navbar-header {
+      text-align: center;
+    }
+
+    .colorRed {
+      color: #FF0000;
+    }
+
+    .titleSize {
+      width: 200px;
+    }
+
+    .ta_center {
+      width: 1000px;
+    }
+
+    .colorBlue {
+      color: #0000FF;
+    }
+
+    table,
+    th,
+    td {
+      padding: 8px;
+    }
+  </style>
+
+
+  <script type="text/javascript">
+    var flag = false
+    function checkvalue() {
+      if (flag) {
+        alert("請勿重複按鈕。");
+        return false;
+      }
+      flag = true;
+      return true;
+    }
+    /*顯示讀取遮罩*/
+    function ShowProgressBar() {
+      displayProgress();
+      displayMaskFrame();
+    }
+
+    // 隱藏讀取遮罩
+    function HideProgressBar() {
+      var progress = $('#divProgress');
+      var maskFrame = $("#divMaskFrame");
+      progress.hide();
+      maskFrame.hide();
+    }
+    // 顯示讀取畫面
+    function displayProgress() {
+      var w = $(document).width();
+      var h = $(window).height();
+      var progress = $('#divProgress');
+      progress.css({ "z-index": 999999, "top": (h / 2) - (progress.height() / 2), "left": (w / 2) - (progress.width() / 2) });
+      progress.show();
+    }
+    // 顯示遮罩畫面
+    function displayMaskFrame() {
+      var w = $(window).width();
+      var h = $(document).height();
+      var maskFrame = $("#divMaskFrame");
+      maskFrame.css({ "z-index": 999998, "opacity": 0.7, "width": w, "height": h });
+      maskFrame.show();
+    }
+
+    function check() {
+      if (document.getElementById('textbox1').value == "") {
+        ShowProgressBar();
+        return false;
+      }
+      else {
+        HideProgressBar();
+        return true;
+      }
+    }
+  </script>
+
+</head>
+
+<body style="background:  url(assets/img/128-174.jpg) top left repeat;">
+  <form id="formIndex" runat="server" enctype="multipart/form-data">
+    <div style="text-align: center; width: 1000px; height: 1300px; margin: 0px auto; padding-top: 30px; font-family:微軟正黑體" class="form-group">
+      <!--系統名稱-->
+      <div class="page-header">
+        <img alt="" src="assets/img/title.png" />
+      </div>
+
+      <!--選擇bar-->
+      <nav class="navbar navbar-default navbar-static-top" role="navigation">
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav navbar-right">
+            <li *ngIf="!hasToken"><a (click)="login()">報修登入</a></li>
+            <li *ngIf="hasToken"><a (click)="logout()">報修登出</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a [routerLink]="['']">報修首頁</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="place.aspx">空間管理配置表</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <!--網頁內容-->
+      <div>
+        <table class="table table-striped table-bordered">
+          <tr>
+            <td>
+              <table class="ta_center" align="left">
+                <tr>
+                  <td [style.width.%]="20">
+                    <label style="Font-Size:Large">請選擇校區</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <!--下拉式選單-->
+                    <select [(ngModel)]="selectedSchoolArea" name="schoolArea" id="schoolArea" (change)="schoolAreaChanged($event.target.selectedIndex)"
+                      [style.width.%]="20">
+                      <option *ngFor="let item of schoolArea" [value]="item">{{ item }}</option>  <!--選單內容為schoolArea陣列，[value]能和ngModel一起綁定selectedSchoolArea值為item-->
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">請選擇空間位置</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <select [(ngModel)]="selectedFloor" name="floor" id="floor" (change)="floorChanged($event.target.value)" [style.width.%]="30">
+                      <option [value]="">請選擇大樓</option>
+                      <option *ngFor="let item of floorValueList" [value]="item">{{ item }}</option>
+                    </select>
+                    <select [(ngModel)]="selectedLocate" name="locate" id="locate" (change)="locateChanged($event.target.value)" [style.width.%]="30">
+                      <option [value]="">請選擇樓層</option>
+                      <option *ngFor="let item of locateList | filterUnique | orderBy : '+' " [value]="item">{{ item }}</option> <!--使用排除重複和排序的Pipe-->
+                    </select>
+                    <select [(ngModel)]="selectedPlace" name="place" id="place" (change)="placeChanged($event.target.value)" [style.width.%]="30">
+                      <option [value]="">請選擇教室</option>
+                      <option *ngFor="let item of placeList" [value]="item">{{ item }}</option>
+                    </select>
+                    <div *ngIf="placeOther">
+                      <input [(ngModel)]="placeOtherValue" type="text" [maxLength]="25" name="placeOtherValue">
+                      <label class="colorRed">(限25字以內)</label>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">報修屬性</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <select [(ngModel)]="selectedFixType" name="type" id="type" (change)="fixTypeChanged($event.target.selectedIndex)">
+                      <option *ngFor="let item of fixType" [value]="item">{{ item }}</option>
+                    </select>
+                    <label style="Font-Size:medium">1、工程類：水電設施、門窗、牆壁、冷氣、電梯、消防、電話、照明類、有接水管飲水機等建築物之設施。</label>
+                    <label style="Font-Size:medium">2、財物或勞務類：如可移動之一般家電、櫥櫃、運動器材、桌椅、布幕、投影機與清潔。</label>
+                    <label style="Font-Size:medium">3、資訊設備類：電腦、網路、資訊講桌類等異常。</label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">修繕物品</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <select [(ngModel)]="selectedFixItem" name="fixItem" id="fixItem" (change)="fixItemChanged($event.target.value)">
+                      <option *ngFor="let item of fixItemList" [value]="item">{{ item }}</option>
+                    </select>
+                    <div>
+                      <input [(ngModel)]="fixItemOtherValue" type="text" *ngIf="fixItemOther" [maxLength]="10" name="fixItemOtherValue">
+                      <label class="colorRed" *ngIf="fixItemOther">(限10字以內)</label>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">損壞狀況</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <input [(ngModel)]="damageStatus" type="text" [maxLength]="30" name="damageStatus">
+                    <span class="colorRed">(30字以內)</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">照片</label>
+                  </td>
+                  <td>
+                    <input type="file" (change)="pictureAdd($event)" style="font-family:'微軟正黑體'">
+                    <!--上傳檔案使用input，type設定為file-->
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">報修者身份</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <select [(ngModel)]="selectedIdentity" name="identity" id="identity" (change)="identityChanged($event.target.value)">
+                      <option *ngFor="let item of identity" [value]="item">{{ item }}</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr *ngIf="isFaculty">
+                  <td>
+                    <label style="Font-Size:Large">報修者單位</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <select [(ngModel)]="selectedDepartment" name="department" id="department" (change)="departmentChanged($event.target.value)">
+                      <option *ngFor="let item of departmentList" [value]="item">{{ item }}</option>
+                    </select>
+                    <select [(ngModel)]="selectedNextDepartment" name="nextDepartment" id="nextDepartment" *ngIf="hasNextDepartment">
+                      <option *ngFor="let item of nextDepartmentList" [value]="item">{{ item }}</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr *ngIf="!isFaculty">
+                  <td>
+                    <label style="Font-Size:Large">班級</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <select [(ngModel)]="selectedSchoolSystem" name="schoolSystem" id="schoolSystem" (change)="schoolSystemChanged($event.target.value)">
+                      <option *ngFor="let item of schoolSystemList" [value]="item">{{ item }}</option>
+                    </select>
+                    <select [(ngModel)]="selectedFaculty" name="faculty" id="faculty" (change)="facultyChanged($event.target.value)">
+                      <option *ngFor="let item of facultyList" [value]="item">{{ item }}</option>
+                    </select>
+                    <select [(ngModel)]="selectedSchoolClass" name="schoolClass" id="schoolClass">
+                      <option *ngFor="let item of classList" [value]="item">{{ item }}</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr *ngIf="!isFaculty">
+                  <td>
+                    <label style="Font-Size:Large">學號</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <input [(ngModel)]="schoolNumber" type="text" name="schoolNumber">
+                    <span class="colorBlue">例：10511111</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">姓名</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <input [(ngModel)]="repairName" type="text" [maxLength]="12" name="repairName">
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">連絡電話</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <input [(ngModel)]="phone" type="text" [maxLength]="12" name="phone">
+                    <span class="colorBlue">例：23221234或0987654321</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">E-mail</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <input [(ngModel)]="email" type="email" [maxLength]="50" name="email">
+                    <span class="colorBlue">例：xxx@ntub.edu.tw</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">事件等級</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <select [(ngModel)]="selectedLevel" name="level" id="level">
+                      <option [value]="">請選擇</option>
+                      <option *ngFor="let item of level" [value]="item">{{ item }}</option>
+                    </select>
+                    <div>
+                      <label style="Font-Size:medium">嚴重：足以影響學校整體事務運作</label>
+                    </div>
+                    <div>
+                      <label style="Font-Size:medium">中等：會影響教學活動進行</label>
+                    </div>
+                    <div>
+                      <label style="Font-Size:medium">普通：會影響日常生活作息</label>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label style="Font-Size:Large">需求速別</label>
+                    <label class="colorRed">*</label>
+                  </td>
+                  <td>
+                    <select [(ngModel)]="selectedSpeed" name="speed" id="speed">
+                      <option [value]="">請選擇</option>
+                      <option *ngFor="let item of speed" [value]="item">{{ item }}</option>
+                    </select>
+                    <div>
+                      <label style="Font-Size:medium">快速：當天需排除</label>
+                    </div>
+                    <div>
+                      <label style="Font-Size:medium">中等：三日內需排除</label>
+                    </div>
+                    <div>
+                      <label style="Font-Size:medium">普通：一周內須排除</label>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>
+                    <button type="button" (click)="sendRepair()" style="color:Blue; width: 100px; height: 50px; Font-Size:20pt" width="50px">送出</button>
+                    <label style="Font-Size:Large" class="colorRed">*標示之欄位為必填</label>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!--頁尾-->
+      <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
+        <table style="text-align: center; width: 1400px; font-size: 12px;" align="center">
+          <tr>
+            <td>國立臺北商業大學版權所有 Copyright (c) 2014 National Taipei University of Business. All Rights Reserved. 臺北校區校址：100台北市中正區濟南路一段321號；電話：(02)23935263
+            </td>
+          </tr>
+        </table>
+      </nav>
+    </div>
+  </form>
+</body>
+
+</html>
